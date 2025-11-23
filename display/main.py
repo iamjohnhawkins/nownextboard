@@ -15,16 +15,41 @@ class NowNextBoard:
 
     def __init__(self):
         """Initialize the application."""
-        # For framebuffer mode (no X server), set SDL to use framebuffer
-        # This must be done before pygame.init()
-        if USE_FRAMEBUFFER:
-            print("Framebuffer mode enabled (experimental)")
-            print("Note: HyperPixel 4 typically requires X server")
-            print("If you get errors, set USE_FRAMEBUFFER=False in config.py")
-            os.environ['SDL_VIDEODRIVER'] = 'fbcon'
-            os.environ['SDL_FBDEV'] = '/dev/fb0'
-            os.environ['SDL_NOMOUSE'] = '1'
+        # Configure SDL for direct framebuffer rendering (no X server required)
+        # Try multiple drivers in order of preference
+        print("Initializing pygame for direct framebuffer rendering...")
 
+        drivers = ['fbcon', 'directfb', 'svgalib']
+        driver_found = False
+
+        for driver in drivers:
+            try:
+                print(f"Attempting {driver} driver...")
+                os.environ['SDL_VIDEODRIVER'] = driver
+                os.environ['SDL_FBDEV'] = '/dev/fb0'
+                os.environ['SDL_NOMOUSE'] = '1'
+
+                pygame.init()
+
+                # Test if we can actually create a display
+                pygame.display.set_mode((1, 1))
+                pygame.display.quit()
+
+                print(f"✓ Successfully configured {driver} driver")
+                driver_found = True
+                break
+            except Exception as e:
+                print(f"✗ {driver} driver failed: {e}")
+                pygame.quit()
+                continue
+
+        if not driver_found:
+            print("All framebuffer drivers failed. This may require:")
+            print("  1. Running with sudo (sudo python main.py)")
+            print("  2. Adding user to video group: sudo usermod -a -G video $USER")
+            sys.exit(1)
+
+        # Reinitialize pygame with the working driver
         pygame.init()
 
         # Set up display

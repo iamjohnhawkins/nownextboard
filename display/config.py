@@ -4,7 +4,6 @@
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 480
 FULLSCREEN = True  # Set to False for windowed mode during development
-USE_FRAMEBUFFER = False  # HyperPixel 4 works with X server, not framebuffer
 
 # API settings
 API_URL = "http://localhost:5001"
