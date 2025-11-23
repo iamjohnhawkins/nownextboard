@@ -152,6 +152,18 @@ def get_current():
 @app.route('/<path:path>')
 def serve(path):
     """Serve React frontend."""
+    # Check if static folder exists
+    if not os.path.exists(app.static_folder):
+        return jsonify({
+            'message': 'Now-Next Board API',
+            'version': '1.0',
+            'endpoints': {
+                'schedules': '/api/schedules',
+                'current': '/api/current'
+            },
+            'note': 'React frontend not built yet. Build with: cd frontend && npm run build'
+        })
+
     if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
         return send_from_directory(app.static_folder, path)
     else:
@@ -159,4 +171,4 @@ def serve(path):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

@@ -94,7 +94,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-The backend should now be running on `http://localhost:5000`
+The backend should now be running on `http://localhost:5001`
 
 ### 4. Setup Display Application
 
@@ -168,7 +168,7 @@ sudo systemctl status nownextboard-display
 
 ### Creating Schedules
 
-1. **Access the Web UI**: Open a browser and go to `http://<raspberry-pi-ip>:5000`
+1. **Access the Web UI**: Open a browser and go to `http://<raspberry-pi-ip>:5001`
 
 2. **Create a Schedule**:
    - Click "Create New Schedule"
@@ -214,7 +214,7 @@ SCREEN_HEIGHT = 480
 FULLSCREEN = True  # Set False for windowed mode
 
 # API URL
-API_URL = "http://localhost:5000"
+API_URL = "http://localhost:5001"
 
 # Poll interval (seconds)
 POLL_INTERVAL = 5
@@ -228,7 +228,7 @@ Edit [backend/app.py](backend/app.py):
 
 ```python
 # Server configuration
-app.run(host='0.0.0.0', port=5000, debug=True)
+app.run(host='0.0.0.0', port=5001, debug=True)
 ```
 
 For production, set `debug=False`.
@@ -239,7 +239,7 @@ For production, set `debug=False`.
 
 1. Check if backend is running:
    ```bash
-   curl http://localhost:5000/api/current
+   curl http://localhost:5001/api/current
    ```
 
 2. Check display logs:
@@ -262,7 +262,7 @@ For production, set `debug=False`.
 
 1. Check backend is running: `sudo systemctl status nownextboard-backend`
 2. Check firewall settings
-3. Try accessing from Pi itself: `http://localhost:5000`
+3. Try accessing from Pi itself: `http://localhost:5001`
 
 ### Timer ring not updating
 

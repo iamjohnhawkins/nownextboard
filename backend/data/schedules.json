@@ -1,1 +1,41 @@
-[]
+[
+  {
+    "id": "a3615bd9-ac38-4699-b664-877ed104ad53",
+    "name": "Morning Routine",
+    "activities": [
+      {
+        "id": "activity-1763882759087",
+        "name": "Play iPAD",
+        "start_time": "07:00",
+        "duration_minutes": 40,
+        "color": "#667eea",
+        "icon": ""
+      },
+      {
+        "id": "activity-1763882793120",
+        "name": "Get up and go downstairs",
+        "start_time": "07:40",
+        "duration_minutes": 10,
+        "color": "#667eea",
+        "icon": "\ud83d\udccc"
+      },
+      {
+        "id": "activity-1763882828417",
+        "name": "Breakfast",
+        "start_time": "07:50",
+        "duration_minutes": 30,
+        "color": "#667eea",
+        "icon": "\ud83d\udccc"
+      },
+      {
+        "id": "activity-1763882845537",
+        "name": "Brush Teeth",
+        "start_time": "08:20",
+        "duration_minutes": 10,
+        "color": "#667eea",
+        "icon": "\ud83d\udccc"
+      }
+    ],
+    "active": true
+  }
+]

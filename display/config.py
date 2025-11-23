@@ -3,10 +3,10 @@
 # Display settings for HyperPixel 4
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 480
-FULLSCREEN = True  # Set to True for production on Pi
+FULLSCREEN = False  # Set to True for production on Pi
 
 # API settings
-API_URL = "http://localhost:5000"
+API_URL = "http://localhost:5001"
 POLL_INTERVAL = 5  # Seconds between API polls
 
 # Colors
