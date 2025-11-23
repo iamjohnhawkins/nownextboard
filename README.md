@@ -177,10 +177,14 @@ sudo systemctl status nownextboard-display
 
 3. **Configure Activities**:
    - **Name**: What the activity is (e.g., "Breakfast")
-   - **Icon**: Emoji to display (e.g., 🍳)
+   - **Icon**: Emoji to display (e.g., 🍳) - optional, not displayed on cards
    - **Start Time**: When the activity begins (24-hour format)
    - **Duration**: How long it lasts (in minutes)
    - **Color**: Color for visual identification
+   - **Background Image**: Optional URL to a calming stock photo
+     - If left empty, the system will automatically select a relevant image based on the activity name
+     - Supports Unsplash URLs for royalty-free images
+     - Images are displayed at 30% opacity for a subtle, calming effect
 
 4. **Activate Schedule**: Click "Activate" on a schedule to make it the current one
 

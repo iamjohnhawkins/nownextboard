@@ -15,6 +15,7 @@ class Activity:
     duration_minutes: int
     color: str  # Hex color code
     icon: Optional[str] = None  # Icon name or emoji
+    background_image: Optional[str] = None  # URL or path to background image
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -23,6 +24,9 @@ class Activity:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Activity':
         """Create from dictionary."""
+        # Handle activities that don't have background_image field
+        if 'background_image' not in data:
+            data['background_image'] = None
         return cls(**data)
 
     def get_end_time(self) -> time:

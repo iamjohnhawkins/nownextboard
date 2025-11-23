@@ -10,7 +10,8 @@
         "start_time": "07:00",
         "duration_minutes": 15,
         "color": "#FFB74D",
-        "icon": "👕"
+        "icon": "👕",
+        "background_image": "https://images.unsplash.com/photo-1511988617509-a57c8a288659?w=800&h=600&fit=crop"
       },
       {
         "id": "activity-2",
@@ -18,7 +19,8 @@
         "start_time": "07:15",
         "duration_minutes": 20,
         "color": "#FF8A65",
-        "icon": "🍳"
+        "icon": "🍳",
+        "background_image": "https://images.unsplash.com/photo-1533777324565-a040eb52facd?w=800&h=600&fit=crop"
       },
       {
         "id": "activity-3",
@@ -26,7 +28,8 @@
         "start_time": "07:35",
         "duration_minutes": 5,
         "color": "#4FC3F7",
-        "icon": "🪥"
+        "icon": "🪥",
+        "background_image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=800&h=600&fit=crop"
       },
       {
         "id": "activity-4",
@@ -34,7 +37,8 @@
         "start_time": "07:40",
         "duration_minutes": 10,
         "color": "#81C784",
-        "icon": "🎒"
+        "icon": "🎒",
+        "background_image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&h=600&fit=crop"
       },
       {
         "id": "activity-5",
@@ -42,7 +46,8 @@
         "start_time": "07:50",
         "duration_minutes": 5,
         "color": "#BA68C8",
-        "icon": "👟"
+        "icon": "👟",
+        "background_image": "https://images.unsplash.com/photo-1445510861639-5651173bc5d5?w=800&h=600&fit=crop"
       },
       {
         "id": "activity-6",
@@ -50,7 +55,8 @@
         "start_time": "07:55",
         "duration_minutes": 5,
         "color": "#F06292",
-        "icon": "🚌"
+        "icon": "🚌",
+        "background_image": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&h=600&fit=crop"
       }
     ]
   }

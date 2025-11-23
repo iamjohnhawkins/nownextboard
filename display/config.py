@@ -17,8 +17,12 @@ BORDER_COLOR = (200, 200, 210)
 
 # Timer ring settings
 RING_THICKNESS = 20
-RING_REMAINING_COLOR = (76, 175, 80)  # Green
 RING_ELAPSED_COLOR = (220, 220, 230)  # Light gray
+
+# Timer colors - transition from green to amber to red
+TIMER_COLOR_GREEN = (76, 175, 80)   # Start color (lots of time left)
+TIMER_COLOR_AMBER = (255, 193, 7)   # Middle color (some time left)
+TIMER_COLOR_RED = (244, 67, 54)     # End color (little time left)
 
 # Fonts (will be loaded in main.py)
 FONT_SIZE_LARGE = 72
