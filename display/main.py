@@ -18,6 +18,9 @@ class NowNextBoard:
         # For framebuffer mode (no X server), set SDL to use framebuffer
         # This must be done before pygame.init()
         if USE_FRAMEBUFFER:
+            print("Framebuffer mode enabled (experimental)")
+            print("Note: HyperPixel 4 typically requires X server")
+            print("If you get errors, set USE_FRAMEBUFFER=False in config.py")
             os.environ['SDL_VIDEODRIVER'] = 'fbcon'
             os.environ['SDL_FBDEV'] = '/dev/fb0'
             os.environ['SDL_NOMOUSE'] = '1'

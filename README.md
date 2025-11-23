@@ -220,8 +220,8 @@ SCREEN_HEIGHT = 480
 # Fullscreen mode
 FULLSCREEN = True  # Set False for windowed mode
 
-# Framebuffer mode (for headless operation without X server)
-USE_FRAMEBUFFER = False  # Set True for direct framebuffer access
+# Framebuffer mode (experimental - HyperPixel 4 requires X server)
+USE_FRAMEBUFFER = False  # Keep False for HyperPixel 4
 
 # API URL
 API_URL = "http://localhost:5001"
@@ -234,16 +234,17 @@ POLL_INTERVAL = 5
 
 **Display Modes:**
 
-1. **X Server Mode (default)**: Requires X11/desktop environment running
-   - Best for development and testing
-   - Set `USE_FRAMEBUFFER = False` and `FULLSCREEN = False` for windowed mode
-   - Set `USE_FRAMEBUFFER = False` and `FULLSCREEN = True` for fullscreen
+1. **X Server Mode (default - required for HyperPixel 4)**:
+   - **Recommended**: HyperPixel 4 works best with X server
+   - Set `USE_FRAMEBUFFER = False` (default)
+   - For development: `FULLSCREEN = False` (windowed mode)
+   - For production: `FULLSCREEN = True` (fullscreen mode)
+   - Ensure X server is running: `export DISPLAY=:0`
 
-2. **Framebuffer Mode (headless)**: Direct framebuffer access, no X server needed
-   - Lighter weight, no desktop environment required
-   - Set `USE_FRAMEBUFFER = True` and `FULLSCREEN = True`
-   - Requires access to `/dev/fb0` (run as user with video group membership)
-   - Add your user to video group: `sudo usermod -a -G video $USER`
+2. **Framebuffer Mode (experimental)**:
+   - Not recommended for HyperPixel 4
+   - May work with other displays that support direct framebuffer
+   - Set `USE_FRAMEBUFFER = True` at your own risk
 
 ### Backend Settings
 
