@@ -127,14 +127,11 @@ class NowNextBoard:
         # Just init the modules we need
         pygame.init()
 
-        # Set up display
+        # Set up native display at physical resolution
         if FULLSCREEN:
-            self.screen = pygame.display.set_mode(
-                (SCREEN_WIDTH, SCREEN_HEIGHT),
-                pygame.FULLSCREEN
-            )
+            self.screen_native = pygame.display.set_mode((phys_w, phys_h), pygame.FULLSCREEN)
         else:
-            self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.screen_native = pygame.display.set_mode((phys_w, phys_h))
 
         pygame.display.set_caption("Now-Next Board")
 
@@ -142,8 +139,17 @@ class NowNextBoard:
         if FULLSCREEN:
             pygame.mouse.set_visible(False)
 
-        # Initialize renderer
-        self.renderer = Renderer(self.screen)
+        # Create logical canvas at desired size (landscape)
+        self.canvas = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT)).convert()
+        self.phys_w = phys_w
+        self.phys_h = phys_h
+
+        # Determine if we need rotation
+        # Physical is portrait (480x800), logical is landscape (800x480)
+        self.needs_rotation = phys_h > phys_w
+
+        # Initialize renderer with the logical canvas
+        self.renderer = Renderer(self.canvas)
 
         # Application state
         self.running = True
@@ -190,6 +196,20 @@ class NowNextBoard:
                 self.current_data = data
             self.last_poll = current_time
 
+    def present(self):
+        """Present the logical canvas to the physical screen."""
+        if self.needs_rotation:
+            # Physical screen is portrait, rotate canvas 270 degrees (or -90) to landscape
+            rotated = pygame.transform.rotate(self.canvas, 270)
+            # Center the rotated canvas on the physical screen
+            x = (self.phys_w - rotated.get_width()) // 2
+            y = (self.phys_h - rotated.get_height()) // 2
+            self.screen_native.blit(rotated, (x, y))
+        else:
+            # Physical screen matches logical orientation
+            self.screen_native.blit(self.canvas, (0, 0))
+        pygame.display.flip()
+
     def render(self):
         """Render the current state."""
         if self.current_data is None:
@@ -201,6 +221,9 @@ class NowNextBoard:
 
             self.renderer.render(current, next_act, time_info)
 
+        # Present the rendered canvas to the physical screen
+        self.present()
+
     def run(self):
         """Main application loop."""
         print("Now-Next Board starting...")
@@ -208,6 +231,7 @@ class NowNextBoard:
 
         # Initial data fetch
         self.renderer.render_loading()
+        self.present()
         self.current_data = self.fetch_current_activities()
 
         if self.current_data is None:
