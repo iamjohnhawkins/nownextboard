@@ -389,11 +389,71 @@
             document.getElementById('editModal').classList.remove('show');
         }
 
+        function calculateEndTime(startTime, durationMinutes) {
+            const [hours, minutes] = startTime.split(':').map(Number);
+            const totalMinutes = hours * 60 + minutes + durationMinutes;
+            const endHours = Math.floor(totalMinutes / 60) % 24;
+            const endMinutes = totalMinutes % 60;
+            return `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+        }
+
+        function getNextStartTime() {
+            if (editingActivities.length === 0) {
+                return '08:00';
+            }
+
+            // Find the activity with the latest end time
+            let latestEndTime = '00:00';
+            let latestEndMinutes = 0;
+
+            editingActivities.forEach(activity => {
+                const endTime = calculateEndTime(activity.start_time, activity.duration_minutes);
+                const [hours, minutes] = endTime.split(':').map(Number);
+                const totalMinutes = hours * 60 + minutes;
+
+                if (totalMinutes > latestEndMinutes) {
+                    latestEndMinutes = totalMinutes;
+                    latestEndTime = endTime;
+                }
+            });
+
+            return latestEndTime;
+        }
+
+        function detectOverlaps() {
+            const overlaps = new Set();
+
+            for (let i = 0; i < editingActivities.length; i++) {
+                for (let j = i + 1; j < editingActivities.length; j++) {
+                    const a = editingActivities[i];
+                    const b = editingActivities[j];
+
+                    const aStart = a.start_time.split(':').map(Number);
+                    const aStartMin = aStart[0] * 60 + aStart[1];
+                    const aEndMin = aStartMin + a.duration_minutes;
+
+                    const bStart = b.start_time.split(':').map(Number);
+                    const bStartMin = bStart[0] * 60 + bStart[1];
+                    const bEndMin = bStartMin + b.duration_minutes;
+
+                    // Check if activities overlap
+                    if ((aStartMin < bEndMin && aEndMin > bStartMin)) {
+                        overlaps.add(i);
+                        overlaps.add(j);
+                    }
+                }
+            }
+
+            return overlaps;
+        }
+
         function addActivity() {
+            const nextStartTime = getNextStartTime();
+
             editingActivities.push({
                 id: `activity-${Date.now()}`,
                 name: '',
-                start_time: '08:00',
+                start_time: nextStartTime,
                 duration_minutes: 30,
                 color: '#667eea',
                 icon: '📌',
@@ -407,31 +467,55 @@
             renderActivitiesEditor();
         }
 
+        function updateActivity(index, field, value) {
+            editingActivities[index][field] = value;
+            renderActivitiesEditor();
+        }
+
         function renderActivitiesEditor() {
+            // Sort activities by start time
+            editingActivities.sort((a, b) => {
+                const aTime = a.start_time.split(':').map(Number);
+                const bTime = b.start_time.split(':').map(Number);
+                const aMinutes = aTime[0] * 60 + aTime[1];
+                const bMinutes = bTime[0] * 60 + bTime[1];
+                return aMinutes - bMinutes;
+            });
+
+            const overlaps = detectOverlaps();
             const container = document.getElementById('activities-container');
-            container.innerHTML = editingActivities.map((activity, index) => `
-                <div class="activity-editor" style="margin-bottom: 1rem;">
+
+            container.innerHTML = editingActivities.map((activity, index) => {
+                const endTime = calculateEndTime(activity.start_time, activity.duration_minutes);
+                const hasOverlap = overlaps.has(index);
+                const borderStyle = hasOverlap ? 'border: 2px solid #ef4444; background-color: #fee;' : '';
+
+                return `
+                <div class="activity-editor" style="margin-bottom: 1rem; ${borderStyle}">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <strong>Activity ${index + 1}</strong>
+                        <strong>Activity ${index + 1} ${hasOverlap ? '⚠️ OVERLAP' : ''}</strong>
                         <button type="button" class="danger" onclick="removeActivity(${index})" style="padding: 0.25rem 0.75rem;">Remove</button>
                     </div>
                     <div class="form-row">
                         <input type="text" placeholder="Activity name" value="${activity.name}"
-                            onchange="editingActivities[${index}].name = this.value" required>
+                            onchange="updateActivity(${index}, 'name', this.value)" required>
                         <input type="text" placeholder="Icon" value="${activity.icon || ''}" maxlength="4"
-                            onchange="editingActivities[${index}].icon = this.value">
+                            onchange="updateActivity(${index}, 'icon', this.value)">
                         <input type="time" value="${activity.start_time}"
-                            onchange="editingActivities[${index}].start_time = this.value" required>
+                            onchange="updateActivity(${index}, 'start_time', this.value)" required>
                         <input type="number" placeholder="Minutes" value="${activity.duration_minutes}" min="1" max="480"
-                            onchange="editingActivities[${index}].duration_minutes = parseInt(this.value)" required>
+                            onchange="updateActivity(${index}, 'duration_minutes', parseInt(this.value))" required>
+                    </div>
+                    <div style="margin-top: 0.5rem; color: #666; font-size: 0.875rem;">
+                        End time: ${endTime}
                     </div>
                     <div style="margin-top: 0.5rem;">
                         <input type="text" placeholder="Background image URL (optional)" value="${activity.background_image || ''}"
-                            onchange="editingActivities[${index}].background_image = this.value" style="width: 100%;">
+                            onchange="updateActivity(${index}, 'background_image', this.value)" style="width: 100%;">
                         <small style="color: #666; display: block; margin-top: 0.25rem;">Enter a URL to a calming stock photo (e.g., from Unsplash)</small>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         async function saveSchedule(event) {
