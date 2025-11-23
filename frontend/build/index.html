@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Now-Next Board - Schedule Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f0f0f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .controls h2 {
+            font-size: 2rem;
+        }
+
+        button {
+            background-color: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button.secondary {
+            background-color: #6c757d;
+        }
+
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        button.danger {
+            background-color: #dc3545;
+        }
+
+        button.danger:hover {
+            background-color: #c82333;
+        }
+
+        button.success {
+            background-color: #28a745;
+        }
+
+        button.success:hover {
+            background-color: #218838;
+        }
+
+        .schedules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .schedule-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+        }
+
+        .schedule-card.active {
+            border-color: #28a745;
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .schedule-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .active-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .activities-list {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .activity-item {
+            display: grid;
+            grid-template-columns: 2rem 1fr auto;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            font-size: 1.5rem;
+        }
+
+        .activity-name {
+            font-weight: 500;
+        }
+
+        .activity-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .card-actions button {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.5rem;
+            color: #666;
+        }
+
+        .activity-editor {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .activity-fields {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Now-Next Board</h1>
+        <p>Schedule Manager</p>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <h2>Schedules</h2>
+            <button onclick="showCreateModal()">Create New Schedule</button>
+        </div>
+
+        <div id="schedules-container" class="schedules-grid">
+            <div class="loading">Loading schedules...</div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Create Schedule</h2>
+            <form id="scheduleForm" onsubmit="saveSchedule(event)">
+                <div class="form-group">
+                    <label>Schedule Name</label>
+                    <input type="text" id="scheduleName" required placeholder="e.g., Morning Routine">
+                </div>
+
+                <div class="form-group">
+                    <label>Activities</label>
+                    <div id="activities-container"></div>
+                    <button type="button" onclick="addActivity()" style="margin-top: 1rem;">Add Activity</button>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit">Save Schedule</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let schedules = [];
+        let currentSchedule = null;
+        let editingActivities = [];
+
+        // Load schedules on page load
+        loadSchedules();
+
+        async function loadSchedules() {
+            try {
+                const response = await fetch('/api/schedules');
+                schedules = await response.json();
+                renderSchedules();
+            } catch (error) {
+                console.error('Failed to load schedules:', error);
+                document.getElementById('schedules-container').innerHTML =
+                    '<div class="empty-state"><p>Failed to load schedules</p></div>';
+            }
+        }
+
+        function renderSchedules() {
+            const container = document.getElementById('schedules-container');
+
+            if (schedules.length === 0) {
+                container.innerHTML =
+                    '<div class="empty-state"><p>No schedules yet. Create your first schedule to get started!</p></div>';
+                return;
+            }
+
+            container.innerHTML = schedules.map(schedule => `
+                <div class="schedule-card ${schedule.active ? 'active' : ''}">
+                    <div class="schedule-header">
+                        <h3>${schedule.name}</h3>
+                        ${schedule.active ? '<span class="active-badge">Active</span>' : ''}
+                    </div>
+                    <div class="activities-list">
+                        ${schedule.activities.slice(0, 3).map(activity => `
+                            <div class="activity-item">
+                                <span class="activity-icon">${activity.icon || '📌'}</span>
+                                <span class="activity-name">${activity.name}</span>
+                                <span class="activity-time">${activity.start_time}</span>
+                            </div>
+                        `).join('')}
+                        ${schedule.activities.length > 3 ?
+                            `<p style="margin-top: 0.5rem; color: #666; font-size: 0.875rem; font-style: italic;">+${schedule.activities.length - 3} more...</p>`
+                            : ''}
+                    </div>
+                    <div class="card-actions">
+                        ${!schedule.active ?
+                            `<button class="success" onclick="activateSchedule('${schedule.id}')">Activate</button>`
+                            : ''}
+                        <button class="secondary" onclick="editSchedule('${schedule.id}')">Edit</button>
+                        <button class="danger" onclick="deleteSchedule('${schedule.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showCreateModal() {
+            currentSchedule = null;
+            editingActivities = [];
+            document.getElementById('modal-title').textContent = 'Create Schedule';
+            document.getElementById('scheduleName').value = '';
+            document.getElementById('activities-container').innerHTML = '';
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function editSchedule(scheduleId) {
+            currentSchedule = schedules.find(s => s.id === scheduleId);
+            editingActivities = [...currentSchedule.activities];
+            document.getElementById('modal-title').textContent = 'Edit Schedule';
+            document.getElementById('scheduleName').value = currentSchedule.name;
+            renderActivitiesEditor();
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        function addActivity() {
+            editingActivities.push({
+                id: `activity-${Date.now()}`,
+                name: '',
+                start_time: '08:00',
+                duration_minutes: 30,
+                color: '#667eea',
+                icon: '📌',
+                background_image: ''
+            });
+            renderActivitiesEditor();
+        }
+
+        function removeActivity(index) {
+            editingActivities.splice(index, 1);
+            renderActivitiesEditor();
+        }
+
+        function renderActivitiesEditor() {
+            const container = document.getElementById('activities-container');
+            container.innerHTML = editingActivities.map((activity, index) => `
+                <div class="activity-editor" style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>Activity ${index + 1}</strong>
+                        <button type="button" class="danger" onclick="removeActivity(${index})" style="padding: 0.25rem 0.75rem;">Remove</button>
+                    </div>
+                    <div class="form-row">
+                        <input type="text" placeholder="Activity name" value="${activity.name}"
+                            onchange="editingActivities[${index}].name = this.value" required>
+                        <input type="text" placeholder="Icon" value="${activity.icon || ''}" maxlength="4"
+                            onchange="editingActivities[${index}].icon = this.value">
+                        <input type="time" value="${activity.start_time}"
+                            onchange="editingActivities[${index}].start_time = this.value" required>
+                        <input type="number" placeholder="Minutes" value="${activity.duration_minutes}" min="1" max="480"
+                            onchange="editingActivities[${index}].duration_minutes = parseInt(this.value)" required>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <input type="text" placeholder="Background image URL (optional)" value="${activity.background_image || ''}"
+                            onchange="editingActivities[${index}].background_image = this.value" style="width: 100%;">
+                        <small style="color: #666; display: block; margin-top: 0.25rem;">Enter a URL to a calming stock photo (e.g., from Unsplash)</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function saveSchedule(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('scheduleName').value;
+
+            if (editingActivities.length === 0) {
+                alert('Please add at least one activity');
+                return;
+            }
+
+            const scheduleData = {
+                name: name,
+                activities: editingActivities,
+                active: currentSchedule?.active || false
+            };
+
+            try {
+                if (currentSchedule) {
+                    // Update
+                    await fetch(`/api/schedules/${currentSchedule.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(scheduleData)
+                    });
+                } else {
+                    // Create
+                    await fetch('/api/schedules', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(scheduleData)
+                    });
+                }
+
+                closeModal();
+                loadSchedules();
+            } catch (error) {
+                console.error('Failed to save schedule:', error);
+                alert('Failed to save schedule');
+            }
+        }
+
+        async function deleteSchedule(scheduleId) {
+            if (!confirm('Are you sure you want to delete this schedule?')) {
+                return;
+            }
+
+            try {
+                await fetch(`/api/schedules/${scheduleId}`, {
+                    method: 'DELETE'
+                });
+                loadSchedules();
+            } catch (error) {
+                console.error('Failed to delete schedule:', error);
+                alert('Failed to delete schedule');
+            }
+        }
+
+        async function activateSchedule(scheduleId) {
+            try {
+                await fetch(`/api/schedules/${scheduleId}/activate`, {
+                    method: 'POST'
+                });
+                loadSchedules();
+            } catch (error) {
+                console.error('Failed to activate schedule:', error);
+                alert('Failed to activate schedule');
+            }
+        }
+    </script>
+</body>
+</html>
