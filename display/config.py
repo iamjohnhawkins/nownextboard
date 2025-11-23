@@ -3,7 +3,8 @@
 # Display settings for HyperPixel 4
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 480
-FULLSCREEN = False  # Set to True for production on Pi
+FULLSCREEN = True  # Set to False for windowed mode during development
+USE_FRAMEBUFFER = True  # Set to False if using X server instead of direct framebuffer
 
 # API settings
 API_URL = "http://localhost:5001"

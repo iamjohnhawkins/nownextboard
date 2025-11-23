@@ -3,6 +3,7 @@ import pygame
 import requests
 import time
 import sys
+import os
 from typing import Optional, Dict, Any, Tuple
 
 from config import *
@@ -14,6 +15,13 @@ class NowNextBoard:
 
     def __init__(self):
         """Initialize the application."""
+        # For framebuffer mode (no X server), set SDL to use framebuffer
+        # This must be done before pygame.init()
+        if USE_FRAMEBUFFER:
+            os.environ['SDL_VIDEODRIVER'] = 'fbcon'
+            os.environ['SDL_FBDEV'] = '/dev/fb0'
+            os.environ['SDL_NOMOUSE'] = '1'
+
         pygame.init()
 
         # Set up display

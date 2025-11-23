@@ -103,12 +103,15 @@ Open a new terminal:
 ```bash
 cd ~/nownextboard/display
 
-# Create virtual environment
-python3 -m venv venv
+# Install system pygame package (recommended for Raspberry Pi)
+sudo apt install -y python3-pygame
+
+# Create virtual environment with system packages access
+python3 -m venv venv --system-site-packages
 source venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Install remaining dependencies
+pip install requests==2.31.0 python-dateutil==2.8.2
 
 # Test the display (make sure backend is running first)
 python main.py
@@ -217,6 +220,9 @@ SCREEN_HEIGHT = 480
 # Fullscreen mode
 FULLSCREEN = True  # Set False for windowed mode
 
+# Framebuffer mode (for headless operation without X server)
+USE_FRAMEBUFFER = False  # Set True for direct framebuffer access
+
 # API URL
 API_URL = "http://localhost:5001"
 
@@ -225,6 +231,19 @@ POLL_INTERVAL = 5
 
 # Colors and fonts can be customized
 ```
+
+**Display Modes:**
+
+1. **X Server Mode (default)**: Requires X11/desktop environment running
+   - Best for development and testing
+   - Set `USE_FRAMEBUFFER = False` and `FULLSCREEN = False` for windowed mode
+   - Set `USE_FRAMEBUFFER = False` and `FULLSCREEN = True` for fullscreen
+
+2. **Framebuffer Mode (headless)**: Direct framebuffer access, no X server needed
+   - Lighter weight, no desktop environment required
+   - Set `USE_FRAMEBUFFER = True` and `FULLSCREEN = True`
+   - Requires access to `/dev/fb0` (run as user with video group membership)
+   - Add your user to video group: `sudo usermod -a -G video $USER`
 
 ### Backend Settings
 
@@ -238,6 +257,28 @@ app.run(host='0.0.0.0', port=5001, debug=True)
 For production, set `debug=False`.
 
 ## Troubleshooting
+
+### Pygame installation fails on Raspberry Pi
+
+If you get errors like `sdl2-config: not found` or Python compilation errors when installing pygame:
+
+**Solution**: Use the system pygame package instead of pip install:
+
+```bash
+# Install system pygame
+sudo apt install -y python3-pygame
+
+# Recreate venv with system packages access
+cd ~/nownextboard/display
+rm -rf venv
+python3 -m venv venv --system-site-packages
+source venv/bin/activate
+
+# Install only the other dependencies
+pip install requests==2.31.0 python-dateutil==2.8.2
+```
+
+This avoids compilation issues and is the recommended approach for Raspberry Pi.
 
 ### Display not showing
 
@@ -255,6 +296,37 @@ For production, set `debug=False`.
    ```bash
    ls /dev/fb*
    ```
+
+### X server errors or "Cannot open display"
+
+If you get errors about X display when running the display application:
+
+**Option 1: Run with X server** (if using desktop environment)
+```bash
+export DISPLAY=:0
+python main.py
+```
+
+**Option 2: Use framebuffer mode** (headless, no X server needed)
+```bash
+# Edit config.py
+USE_FRAMEBUFFER = True
+FULLSCREEN = True
+
+# Add user to video group for framebuffer access
+sudo usermod -a -G video $USER
+
+# Log out and back in, then run
+python main.py
+```
+
+**Option 3: Start X server** (minimal X without desktop)
+```bash
+sudo apt install xserver-xorg xinit
+startx &
+export DISPLAY=:0
+python main.py
+```
 
 ### No activities showing
 
