@@ -8,7 +8,11 @@ import os
 
 from models import Schedule, Activity, ScheduleStore
 
-app = Flask(__name__, static_folder='../frontend/build')
+# Get the absolute path to the frontend build directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_FOLDER = os.path.join(BASE_DIR, 'frontend', 'build')
+
+app = Flask(__name__, static_folder=STATIC_FOLDER)
 CORS(app)
 
 # Initialize schedule store
@@ -147,13 +151,14 @@ def get_current():
     })
 
 
-# Serve React app
+# Serve frontend
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
-    """Serve React frontend."""
-    # Check if static folder exists
-    if not os.path.exists(app.static_folder):
+    """Serve web frontend."""
+    # Check if static folder and index.html exist
+    index_path = os.path.join(app.static_folder, 'index.html')
+    if not os.path.exists(app.static_folder) or not os.path.exists(index_path):
         return jsonify({
             'message': 'Now-Next Board API',
             'version': '1.0',
@@ -161,7 +166,8 @@ def serve(path):
                 'schedules': '/api/schedules',
                 'current': '/api/current'
             },
-            'note': 'React frontend not built yet. Build with: cd frontend && npm run build'
+            'static_folder': app.static_folder,
+            'note': 'Frontend files not found. Expected index.html at: ' + index_path
         })
 
     if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
