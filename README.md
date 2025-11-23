@@ -220,9 +220,6 @@ SCREEN_HEIGHT = 480
 # Fullscreen mode
 FULLSCREEN = True  # Set False for windowed mode
 
-# Framebuffer mode (experimental - HyperPixel 4 requires X server)
-USE_FRAMEBUFFER = False  # Keep False for HyperPixel 4
-
 # API URL
 API_URL = "http://localhost:5001"
 
@@ -232,19 +229,18 @@ POLL_INTERVAL = 5
 # Colors and fonts can be customized
 ```
 
-**Display Modes:**
+**Display Backend:**
 
-1. **X Server Mode (default - required for HyperPixel 4)**:
-   - **Recommended**: HyperPixel 4 works best with X server
-   - Set `USE_FRAMEBUFFER = False` (default)
-   - For development: `FULLSCREEN = False` (windowed mode)
-   - For production: `FULLSCREEN = True` (fullscreen mode)
-   - Ensure X server is running: `export DISPLAY=:0`
+The application automatically selects the best SDL video backend in this priority order:
+1. **User-specified driver** (if `SDL_VIDEODRIVER` environment variable is set)
+2. **KMSDRM** (modern DRM/KMS driver) - tries card indices 2, 1, 0
+3. **fbdev** (framebuffer device) - uses `/dev/fb0`
 
-2. **Framebuffer Mode (experimental)**:
-   - Not recommended for HyperPixel 4
-   - May work with other displays that support direct framebuffer
-   - Set `USE_FRAMEBUFFER = True` at your own risk
+No X server is required. The display runs natively on the framebuffer for best performance.
+
+**For development/testing:**
+- Set `FULLSCREEN = False` in config.py for windowed mode
+- The app will warn if `DISPLAY` is set (X server detected)
 
 ### Backend Settings
 
@@ -298,34 +294,44 @@ This avoids compilation issues and is the recommended approach for Raspberry Pi.
    ls /dev/fb*
    ```
 
-### X server errors or "Cannot open display"
+### Display backend errors
 
-If you get errors about X display when running the display application:
+If you get errors like "Could not initialize any SDL video backend":
 
-**Option 1: Run with X server** (if using desktop environment)
+**Option 1: Check permissions** (most common issue)
 ```bash
-export DISPLAY=:0
-python main.py
+# Add user to video and render groups for framebuffer/DRM access
+sudo usermod -a -G video,render $USER
+
+# Log out and back in for group changes to take effect
+# Or reboot the Pi
 ```
 
-**Option 2: Use framebuffer mode** (headless, no X server needed)
+**Option 2: Verify framebuffer device exists**
 ```bash
-# Edit config.py
-USE_FRAMEBUFFER = True
-FULLSCREEN = True
+# Check if /dev/fb0 exists
+ls -l /dev/fb0
 
-# Add user to video group for framebuffer access
-sudo usermod -a -G video $USER
-
-# Log out and back in, then run
-python main.py
+# If it doesn't exist, check dmesg for display driver issues
+dmesg | grep -i fb
 ```
 
-**Option 3: Start X server** (minimal X without desktop)
+**Option 3: Force a specific driver**
 ```bash
-sudo apt install xserver-xorg xinit
-startx &
-export DISPLAY=:0
+# Try forcing fbdev driver
+SDL_VIDEODRIVER=fbdev python main.py
+
+# Or try kmsdrm with specific card
+SDL_VIDEODRIVER=kmsdrm SDL_KMSDRM_DEVICE_INDEX=1 python main.py
+```
+
+**Option 4: Run from console (not SSH)**
+The display may need to run from a physical TTY, not over SSH. Try:
+```bash
+# From SSH, switch to TTY1
+sudo chvt 1
+
+# Then login on the physical display and run
 python main.py
 ```
 

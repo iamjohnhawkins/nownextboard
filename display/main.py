@@ -10,46 +10,121 @@ from config import *
 from renderer import Renderer
 
 
+def choose_backend():
+    """
+    Choose SDL video backend with priority:
+      1) Respect user overrides (SDL_VIDEODRIVER already set)
+      2) KMSDRM on card2, card1, card0
+      3) fbdev on /dev/fb0
+    Returns: (backend_env: dict, phys_w, phys_h)
+    """
+    def file_exists(p):
+        try:
+            return os.path.exists(p)
+        except Exception:
+            return False
+
+    def try_init_display(env: dict, probe_size=(800, 480)):
+        """Attempt to init pygame display with given env. Return (ok, info_or_error)."""
+        # Apply env for this attempt
+        for k, v in env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = str(v)
+
+        print(f"  Testing with env: {', '.join(f'{k}={v}' for k, v in sorted(env.items()))}")
+
+        try:
+            pygame.display.init()
+            pygame.font.init()
+            flags = pygame.FULLSCREEN if FULLSCREEN else 0
+            screen = pygame.display.set_mode(probe_size, flags)
+            info = pygame.display.Info()
+            drv = pygame.display.get_driver()
+            print(f"  ✓ Display init OK: driver={drv} phys={info.current_w}x{info.current_h}")
+            return True, (info.current_w, info.current_h, drv,
+                          env.get("SDL_KMSDRM_DEVICE_INDEX"), env.get("SDL_FBDEV"))
+        except Exception as e:
+            print(f"  ✗ Display init failed: {e}")
+            try:
+                pygame.display.quit()
+            except Exception:
+                pass
+            return False, str(e)
+
+    # If user pre-set a driver, try it
+    if os.getenv("SDL_VIDEODRIVER"):
+        print(f"SDL_VIDEODRIVER preset: {os.getenv('SDL_VIDEODRIVER')}")
+        try:
+            pygame.init()
+        except Exception as e:
+            print(f"pygame.init warning: {e}")
+        ok, info = try_init_display({}, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        if ok:
+            phys_w, phys_h, drv, idx, fb = info
+            print(f"Using preset driver={drv} idx={idx} fb={fb}")
+            return dict(os.environ), phys_w, phys_h
+        else:
+            print(f"Preset SDL_VIDEODRIVER failed: {info}")
+
+    # Try KMSDRM on likely card indices
+    print("Trying KMSDRM backend...")
+    for idx in ("2", "1", "0"):
+        env = {
+            "SDL_VIDEODRIVER": "kmsdrm",
+            "SDL_KMSDRM_DEVICE_INDEX": idx,
+            "PYGAME_HIDE_SUPPORT_PROMPT": "1",
+            "XDG_RUNTIME_DIR": os.getenv("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"),
+            "SDL_NOMOUSE": "1",
+        }
+        ok, info = try_init_display(env, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        if ok:
+            phys_w, phys_h, drv, dev_idx, fb = info
+            print(f"✓ Selected backend: driver={drv} kms_index={dev_idx} phys={phys_w}x{phys_h}")
+            return env, phys_w, phys_h
+        else:
+            print(f"  KMSDRM idx {idx} failed, trying next...")
+
+    # Fallback: fbdev on /dev/fb0
+    print("Trying fbdev backend...")
+    fbdev = "/dev/fb0" if file_exists("/dev/fb0") else None
+    env = {
+        "SDL_VIDEODRIVER": "fbdev",
+        "SDL_FBDEV": fbdev,
+        "PYGAME_HIDE_SUPPORT_PROMPT": "1",
+        "XDG_RUNTIME_DIR": os.getenv("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"),
+        "SDL_NOMOUSE": "1",
+    }
+    ok, info = try_init_display(env, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    if ok:
+        phys_w, phys_h, drv, dev_idx, fb = info
+        print(f"✓ Selected backend: driver={drv} fb={fb} phys={phys_w}x{phys_h}")
+        return env, phys_w, phys_h
+
+    raise SystemExit(f"[FATAL] Could not initialize any SDL video backend. Last error: {info}")
+
+
 class NowNextBoard:
     """Main application class."""
 
     def __init__(self):
         """Initialize the application."""
-        # Configure SDL for direct framebuffer rendering (no X server required)
-        # Try multiple drivers in order of preference
-        print("Initializing pygame for direct framebuffer rendering...")
+        print("=" * 60)
+        print(">>> BOOT Now-Next Board Display")
+        print("=" * 60)
 
-        drivers = ['fbcon', 'directfb', 'svgalib']
-        driver_found = False
+        # Choose backend and get physical size
+        backend_env, phys_w, phys_h = choose_backend()
+        drv = backend_env.get("SDL_VIDEODRIVER")
+        kms_idx = backend_env.get("SDL_KMSDRM_DEVICE_INDEX")
+        fb = backend_env.get("SDL_FBDEV")
 
-        for driver in drivers:
-            try:
-                print(f"Attempting {driver} driver...")
-                os.environ['SDL_VIDEODRIVER'] = driver
-                os.environ['SDL_FBDEV'] = '/dev/fb0'
-                os.environ['SDL_NOMOUSE'] = '1'
+        print(f"Backend chosen: driver={drv} kms_index={kms_idx} fb={fb} phys={phys_w}x{phys_h}")
+        print(f"Env summary: DISPLAY={os.getenv('DISPLAY')} XDG_RUNTIME_DIR={os.getenv('XDG_RUNTIME_DIR')}")
 
-                pygame.init()
-
-                # Test if we can actually create a display
-                pygame.display.set_mode((1, 1))
-                pygame.display.quit()
-
-                print(f"✓ Successfully configured {driver} driver")
-                driver_found = True
-                break
-            except Exception as e:
-                print(f"✗ {driver} driver failed: {e}")
-                pygame.quit()
-                continue
-
-        if not driver_found:
-            print("All framebuffer drivers failed. This may require:")
-            print("  1. Running with sudo (sudo python main.py)")
-            print("  2. Adding user to video group: sudo usermod -a -G video $USER")
-            sys.exit(1)
-
-        # Reinitialize pygame with the working driver
+        # pygame already initialized by choose_backend()
+        # Just init the modules we need
         pygame.init()
 
         # Set up display
@@ -153,5 +228,18 @@ class NowNextBoard:
 
 
 if __name__ == "__main__":
-    app = NowNextBoard()
-    app.run()
+    # Warn if DISPLAY is set - we want to run natively without X server
+    if os.getenv("DISPLAY"):
+        print("WARNING: DISPLAY is set; recommended to run on console (no X/Wayland).")
+        print("         Unset DISPLAY or run from TTY for best performance.")
+
+    try:
+        app = NowNextBoard()
+        app.run()
+    except SystemExit:
+        raise
+    except Exception as e:
+        print(f"Fatal error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
