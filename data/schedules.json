@@ -1,0 +1,57 @@
+[
+  {
+    "id": "sample-schedule-1",
+    "name": "Morning Routine",
+    "active": true,
+    "activities": [
+      {
+        "id": "activity-1",
+        "name": "Wake Up & Get Dressed",
+        "start_time": "07:00",
+        "duration_minutes": 15,
+        "color": "#FFB74D",
+        "icon": "👕"
+      },
+      {
+        "id": "activity-2",
+        "name": "Breakfast",
+        "start_time": "07:15",
+        "duration_minutes": 20,
+        "color": "#FF8A65",
+        "icon": "🍳"
+      },
+      {
+        "id": "activity-3",
+        "name": "Brush Teeth",
+        "start_time": "07:35",
+        "duration_minutes": 5,
+        "color": "#4FC3F7",
+        "icon": "🪥"
+      },
+      {
+        "id": "activity-4",
+        "name": "Pack School Bag",
+        "start_time": "07:40",
+        "duration_minutes": 10,
+        "color": "#81C784",
+        "icon": "🎒"
+      },
+      {
+        "id": "activity-5",
+        "name": "Shoes & Jacket",
+        "start_time": "07:50",
+        "duration_minutes": 5,
+        "color": "#BA68C8",
+        "icon": "👟"
+      },
+      {
+        "id": "activity-6",
+        "name": "Leave for School",
+        "start_time": "07:55",
+        "duration_minutes": 5,
+        "color": "#F06292",
+        "icon": "🚌"
+      }
+    ]
+  }
+]

@@ -1,0 +1,146 @@
+.schedule-editor {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.editor-header {
+  margin-bottom: 2rem;
+}
+
+.editor-header h2 {
+  font-size: 2rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.form-group.flex-2 {
+  grid-column: span 2;
+}
+
+.activities-section {
+  margin: 2rem 0;
+}
+
+.activities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.activities-header h3 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.no-activities {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+}
+
+.no-activities p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.activity-item {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+.activity-order {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.activity-order button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  min-width: 40px;
+}
+
+.activity-order button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.activity-order span {
+  font-weight: 600;
+  color: #666;
+  padding: 0.25rem;
+}
+
+.activity-fields {
+  flex: 1;
+}
+
+.delete-activity {
+  align-self: flex-start;
+  white-space: nowrap;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e9ecef;
+}
+
+.form-actions button {
+  min-width: 120px;
+}
+
+@media (max-width: 768px) {
+  .activity-item {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-order {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .delete-activity {
+    align-self: stretch;
+  }
+}
